@@ -129,11 +129,12 @@ struct route_setting voicecall_default_disable[] = {
 
 struct route_setting default_input[] = {
     { .ctl_name = "Main Mic Switch", .intval = 1, },
+    { .ctl_name = "MainMicBias Mode", .intval = 1, },
     { .ctl_name = "AIF1ADCL Source", .intval = 0, },
     { .ctl_name = "AIF2ADCL Source", .intval = 0, },
-    { .ctl_name = "MIXINL IN1L Switch", .intval = 1, },
-    { .ctl_name = "IN1L Volume", .intval = 25, },
-    { .ctl_name = "MIXINL IN1L Volume", .intval = 0, },
+    { .ctl_name = "MIXINL IN2L Switch", .intval = 1, },
+    { .ctl_name = "IN2L Volume", .intval = 25, },
+    { .ctl_name = "MIXINL IN2L Volume", .intval = 0, },
     { .ctl_name = "AIF2ADC Volume", .intval = 96, },
     { .ctl_name = "AIF2ADCL DRC Switch", .intval = 0, },
     { .ctl_name = NULL, },
@@ -141,21 +142,25 @@ struct route_setting default_input[] = {
 
 struct route_setting default_input_disable[] = {
     { .ctl_name = "Main Mic Switch", .intval = 0, },
-    { .ctl_name = "MIXINL IN1L Switch", .intval = 0, },
+    { .ctl_name = "MainMicBias Mode", .intval = 0, },
+    { .ctl_name = "MIXINL IN2L Switch", .intval = 0, },
+    { .ctl_name = "AIF2DACL Source", .intval = 0, },
+    { .ctl_name = "AIF2DACR Source", .intval = 1, },
     { .ctl_name = NULL, },
 };
 
 struct route_setting noise_suppression[] = {
     { .ctl_name = "Sub Mic Switch", .intval = 1, },
+    { .ctl_name = "SubMicBias Mode", .intval = 1, },
     { .ctl_name = "IN1R Volume", .intval = 25, },
     { .ctl_name = "MIXINR IN1R Switch", .intval = 1, },
     { .ctl_name = "MIXINR IN1R Volume", .intval = 0, },
     { .ctl_name = "AIF1ADCR Source", .intval = 1, },
     { .ctl_name = NULL, },
 };
-
 struct route_setting noise_suppression_disable[] = {
     { .ctl_name = "Sub Mic Switch", .intval = 0, },
+    { .ctl_name = "SubMicBias Mode", .intval = 0, },
     { .ctl_name = "MIXINR IN1R Switch", .intval = 0, },
     { .ctl_name = "MIXINR IN1R Volume", .intval = 0, },
     { .ctl_name = NULL, },
@@ -171,15 +176,15 @@ struct route_setting headset_input[] = {
     { .ctl_name = "AIF2 Boost Volume", .intval = 0, },
     { .ctl_name = "DAC1 Volume", .intval = 96, },
     { .ctl_name = "Headphone Volume", .intval = 49, },
-    { .ctl_name = "MIXINL IN1L Switch", .intval = 0, },
+    { .ctl_name = "MIXINL IN2L Switch", .intval = 0, },
     { .ctl_name = "MIXINR IN1R Switch", .intval = 0, },
     { .ctl_name = "Headset Mic Switch", .intval = 1, },
     { .ctl_name = "AIF1ADCL Source", .intval = 0, },
     { .ctl_name = "AIF1ADCR Source", .intval = 0, },
     { .ctl_name = "AIF2ADCL Source", .intval = 0, },
-    { .ctl_name = "MIXINL IN2L Switch", .intval = 1, },
-    { .ctl_name = "IN2L Volume", .intval = 28, },
-    { .ctl_name = "MIXINL IN2L Volume", .intval = 0, },
+    { .ctl_name = "MIXINL IN1L Switch", .intval = 1, },
+    { .ctl_name = "IN1L Volume", .intval = 28, },
+    { .ctl_name = "MIXINL IN1L Volume", .intval = 0, },
     { .ctl_name = "DAC2 Left Sidetone Volume", .intval = 12, },
     { .ctl_name = "AIF2ADC Volume", .intval = 96, },
     { .ctl_name = "AIF2ADCL DRC Switch", .intval = 0, },
@@ -188,7 +193,9 @@ struct route_setting headset_input[] = {
 
 struct route_setting headset_input_disable[] = {
     { .ctl_name = "Headset Mic Switch", .intval = 0, },
-    { .ctl_name = "MIXINL IN2L Switch", .intval = 0, },
+    { .ctl_name = "MIXINL IN1L Switch", .intval = 0, },
+    { .ctl_name = "AIF2DACL Source", .intval = 0, },
+    { .ctl_name = "AIF2DACR Source", .intval = 1, },
     { .ctl_name = NULL, },
 };
 
@@ -204,7 +211,7 @@ struct route_setting bt_output[] = {
     { .ctl_name = "AIF2DAC2R Mixer AIF1.1 Switch", .intval = 1, },
     { .ctl_name = "AIF2DAC Volume", .intval = 96, },
     { .ctl_name = "MIXINL IN1L Volume", .intval = 1, },
-    { .ctl_name = "IN1L Volume", .intval = 28, },
+    { .ctl_name = "IN2L Volume", .intval = 28, },
     { .ctl_name = "IN1R Volume", .intval = 28, },
     { .ctl_name = "LINEOUT1N Switch", .intval = 0, },
     { .ctl_name = "LINEOUT1P Switch", .intval = 0, },
@@ -236,7 +243,7 @@ struct route_setting bt_disable[] = {
     { .ctl_name = "DAC2 Volume", .intval = 96, },
     { .ctl_name = "AIF2ADC Volume", .intval = 96, },
     { .ctl_name = "AIF2ADC Mux", .intval = 0, },
-    { .ctl_name = "MIXINL IN2L Volume", .intval = 0, },
+    { .ctl_name = "MIXINL IN1L Volume", .intval = 0, },
     { .ctl_name = "LINEOUT1N Switch", .intval = 1, },
     { .ctl_name = "LINEOUT1P Switch", .intval = 1, },
     { .ctl_name = "AIF2ADC HPF Mode", .intval = 0, },
