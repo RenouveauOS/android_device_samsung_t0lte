@@ -403,7 +403,7 @@ int akm8963_init(struct noteII_sensors_handlers *handlers,
 	}
 
 	//ALOGD("AKM8963 ASA (Sensitivity Adjustment) values are: (%d, %d, %d)",
-		data->asa[0], data->asa[1], data->asa[2]);
+		//data->asa[0], data->asa[1], data->asa[2]);
 
 	uinput_fd = uinput_rel_create("magnetic_sensor");
 	if (uinput_fd < 0) {
@@ -550,7 +550,7 @@ int akm8963_deactivate(struct noteII_sensors_handlers *handlers)
 
 	if (!empty) {
 		rc = akm8963_config_write(data);
-		if (rc < 0)
+	//	if (rc < 0)
 			//ALOGD("%s: Unable to write akm8963 config", __func__);
 	}
 
