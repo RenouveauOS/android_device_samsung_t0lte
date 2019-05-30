@@ -28,6 +28,7 @@
 #define LOG_TAG "Akm_NoteII"
 #include <utils/Log.h>
 
+#include "input.h"
 #include "noteII_sensors.h"
 #include "ssp.h"
 
@@ -86,7 +87,7 @@ int akm8963_config_read(struct akm8963_data *data)
 	config_fd = open(AKM8963_CONFIG_PATH, O_RDONLY);
 	if (config_fd < 0) {
 		//ALOGD("%s: Unable to open akm8963 config %d %s", __func__, errno, strerror(errno));
-		goto error;
+		rc = -1;
 	}
 
 	rc = 0;
@@ -98,7 +99,7 @@ int akm8963_config_read(struct akm8963_data *data)
 		if (length <= 0)
 			break;
 
-		p = strchr((const char *) &buffer, '\n');
+		p = strchr((char *) &buffer, '\n');
 		if (p != NULL) {
 			offset += (int) p - (int) buffer + 1;
 			*p = '\0';
@@ -125,12 +126,6 @@ int akm8963_config_read(struct akm8963_data *data)
 		}
 	} while (p != NULL && length > 0);
 
-	goto complete;
-
-error:
-	rc = -1;
-
-complete:
 	if (config_fd >= 0)
 		close(config_fd);
 
@@ -151,7 +146,7 @@ int akm8963_config_write(struct akm8963_data *data)
 	config_fd = open(AKM8963_CONFIG_PATH, O_WRONLY | O_TRUNC | O_CREAT, 0664);
 	if (config_fd < 0) {
 		//ALOGD("%s: Unable to open akm8963 config", __func__);
-		goto error;
+		rc = -1;
 	}
 
 	value = (int) data->ho[0];
@@ -160,7 +155,7 @@ int akm8963_config_write(struct akm8963_data *data)
 	rc = write(config_fd, buffer, length);
 	if (rc < length) {
 		//ALOGD("%s: Unable to write akm8963 config", __func__);
-		goto error;
+		rc = -1;
 	}
 
 	value = (int) data->ho[1];
@@ -169,7 +164,7 @@ int akm8963_config_write(struct akm8963_data *data)
 	rc = write(config_fd, buffer, length);
 	if (rc < length) {
 		//ALOGD("%s: Unable to write akm8963 config", __func__);
-		goto error;
+		rc = -1;
 	}
 
 	value = (int) data->ho[2];
@@ -178,16 +173,10 @@ int akm8963_config_write(struct akm8963_data *data)
 	rc = write(config_fd, buffer, length);
 	if (rc < length) {
 		//ALOGD("%s: Unable to write akm8963 config", __func__);
-		goto error;
+		rc = -1;
 	}
 
 	rc = 0;
-	goto complete;
-
-error:
-	rc = -1;
-
-complete:
 	if (config_fd >= 0)
 		close(config_fd);
 
@@ -313,12 +302,28 @@ void *akm8963_thread(void *thread_data)
 			rc = ioctl(device_fd, ECS_IOCTL_GET_MAGDATA, &i2c_data);
 			if (rc < 0) {
 				//ALOGD("%s: Unable to get akm8963 data", __func__);
-				goto next;
+				gettimeofday(&time, NULL);
+				after = timestamp(&time);
+
+				diff = (int) (data->delay - (after - before)) / 1000;
+				if (diff <= 0)
+					continue;
+
+				usleep(diff);
+				return NULL;
 			}
 
 			if (!(i2c_data[0] & 0x01)) {
 				//ALOGD("%s: akm8963 data is not ready", __func__);
-				goto next;
+				gettimeofday(&time, NULL);
+				after = timestamp(&time);
+
+				diff = (int) (data->delay - (after - before)) / 1000;
+				if (diff <= 0)
+					continue;
+
+				usleep(diff);
+				return NULL;
 			}
 
 			magnetic_data[0] = (short) ((i2c_data[2] << 8) | (i2c_data[1] & 0xff));
@@ -337,13 +342,29 @@ void *akm8963_thread(void *thread_data)
 			rc = akm8963_ho_calibration(data, (short *) &magnetic_data, sizeof(magnetic_data));
 			if (rc < 0) {
 				//ALOGD("%s: Unable to calibrate akm8963 HO", __func__);
-				goto next;
+				gettimeofday(&time, NULL);
+				after = timestamp(&time);
+
+				diff = (int) (data->delay - (after - before)) / 1000;
+				if (diff <= 0)
+					continue;
+
+				usleep(diff);
+				return NULL;
 			}
 
 			rc = akm8963_magnetic(data);
 			if (rc < 0) {
 				//ALOGD("%s: Unable to get akm8963 magnetic", __func__);
-				goto next;
+				gettimeofday(&time, NULL);
+				after = timestamp(&time);
+
+				diff = (int) (data->delay - (after - before)) / 1000;
+				if (diff <= 0)
+					continue;
+
+				usleep(diff);
+				return NULL;
 			}
 
 			input_event_set(&event, EV_REL, REL_X, (int) (data->magnetic.x * 1000));
@@ -356,23 +377,12 @@ void *akm8963_thread(void *thread_data)
 			write(uinput_fd, &event, sizeof(event));
 			input_event_set(&event, EV_SYN, 0, 0);
 			write(uinput_fd, &event, sizeof(event));
-
-next:
-			gettimeofday(&time, NULL);
-			after = timestamp(&time);
-
-			diff = (int) (data->delay - (after - before)) / 1000;
-			if (diff <= 0)
-				continue;
-
-			usleep(diff);
 		}
 	}
 	return NULL;
 }
 
-int akm8963_init(struct noteII_sensors_handlers *handlers,
-	struct smdk4x12_sensors_device *device)
+int akm8963_init(struct noteII_sensors_handlers *handlers, struct smdk4x12_sensors_device *device)
 {
 	struct akm8963_data *data = NULL;
 	pthread_attr_t thread_attr;
@@ -392,13 +402,43 @@ int akm8963_init(struct noteII_sensors_handlers *handlers,
 	device_fd = open("/dev/akm8963", O_RDONLY);
 	if (device_fd < 0) {
 		//ALOGD("%s: Unable to open device", __func__);
-		goto error;
+		if (data != NULL)
+			free(data);
+
+		if (uinput_fd >= 0)
+			close(uinput_fd);
+
+		if (input_fd >= 0)
+			close(input_fd);
+
+		if (device_fd >= 0)
+			close(device_fd);
+
+		handlers->poll_fd = -1;
+		handlers->data = NULL;
+
+		return -1;
 	}
 
 	rc = ioctl(device_fd, ECS_IOCTL_GET_FUSEROMDATA, &data->asa);
 	if (rc < 0) {
 		//ALOGD("%s: Unable to get akm8963 FUSE ROM data", __func__);
-		goto error;
+		if (data != NULL)
+			free(data);
+
+		if (uinput_fd >= 0)
+			close(uinput_fd);
+
+		if (input_fd >= 0)
+			close(input_fd);
+
+		if (device_fd >= 0)
+			close(device_fd);
+
+		handlers->poll_fd = -1;
+		handlers->data = NULL;
+
+		return -1;
 	}
 
 	//ALOGD("AKM8963 ASA (Sensitivity Adjustment) values are: (%d, %d, %d)",
@@ -407,13 +447,43 @@ int akm8963_init(struct noteII_sensors_handlers *handlers,
 	uinput_fd = uinput_rel_create("magnetic_sensor");
 	if (uinput_fd < 0) {
 		//ALOGD("%s: Unable to create uinput", __func__);
-		goto error;
+		if (data != NULL)
+			free(data);
+
+		if (uinput_fd >= 0)
+			close(uinput_fd);
+
+		if (input_fd >= 0)
+			close(input_fd);
+
+		if (device_fd >= 0)
+			close(device_fd);
+
+		handlers->poll_fd = -1;
+		handlers->data = NULL;
+
+		return -1;
 	}
 
 	input_fd = input_open("magnetic_sensor");
 	if (input_fd < 0) {
 		//ALOGD("%s: Unable to open magnetic input", __func__);
-		goto error;
+		if (data != NULL)
+			free(data);
+
+		if (uinput_fd >= 0)
+			close(uinput_fd);
+
+		if (input_fd >= 0)
+			close(input_fd);
+
+		if (device_fd >= 0)
+			close(device_fd);
+
+		handlers->poll_fd = -1;
+		handlers->data = NULL;
+
+		return -1;
 	}
 
 	data->thread_continue = 1;
@@ -428,7 +498,22 @@ int akm8963_init(struct noteII_sensors_handlers *handlers,
 	if (rc < 0) {
 		//ALOGD("%s: Unable to create akm8963 thread", __func__);
 		pthread_mutex_destroy(&data->mutex);
-		goto error;
+		if (data != NULL)
+			free(data);
+
+		if (uinput_fd >= 0)
+			close(uinput_fd);
+
+		if (input_fd >= 0)
+			close(input_fd);
+
+		if (device_fd >= 0)
+			close(device_fd);
+
+		handlers->poll_fd = -1;
+		handlers->data = NULL;
+
+		return -1;
 	}
 
 	data->device_fd = device_fd;
@@ -437,24 +522,6 @@ int akm8963_init(struct noteII_sensors_handlers *handlers,
 	handlers->data = (void *) data;
 
 	return 0;
-
-error:
-	if (data != NULL)
-		free(data);
-
-	if (uinput_fd >= 0)
-		close(uinput_fd);
-
-	if (input_fd >= 0)
-		close(input_fd);
-
-	if (device_fd >= 0)
-		close(device_fd);
-
-	handlers->poll_fd = -1;
-	handlers->data = NULL;
-
-	return -1;
 }
 
 int akm8963_deinit(struct noteII_sensors_handlers *handlers)

@@ -32,6 +32,7 @@
 #define LOG_TAG "Gyro_NoteII"
 #include <utils/Log.h>
 
+#include "input.h"
 #include "noteII_sensors.h"
 #include "ssp.h"
 
@@ -61,38 +62,53 @@ int lsm330dlc_gyroscope_init(struct noteII_sensors_handlers *handlers,
 	input_fd = input_open("gyro_sensor");
 	if (input_fd < 0) {
 		//ALOGD("%s: Unable to open input", __func__);
-		goto error;
+		if (data != NULL)
+			free(data);
+
+		if (input_fd >= 0)
+			close(input_fd);
+
+		handlers->poll_fd = -1;
+		handlers->data = NULL;
+
+		return -1;
 	}
 
 	rc = sysfs_path_prefix("gyro_sensor", (char *) &path);
 	if (rc < 0 || path[0] == '\0') {
 		//ALOGD("%s: Unable to open sysfs", __func__);
-		goto error;
+		if (data != NULL)
+			free(data);
+
+		if (input_fd >= 0)
+			close(input_fd);
+
+		handlers->poll_fd = -1;
+		handlers->data = NULL;
+
+		return -1;
 	}
 
 	int sf = snprintf(data->path_delay, PATH_MAX, "%s/poll_delay", path);
 	if(sf <= 0)
 	{
 		//ALOGD("GYRO HAS FAILED !POLL_DELAY!");
-		goto error;
+		if (data != NULL)
+			free(data);
+
+		if (input_fd >= 0)
+			close(input_fd);
+
+		handlers->poll_fd = -1;
+		handlers->data = NULL;
+
+		return -1;
 	}
 
 	handlers->poll_fd = input_fd;
 	handlers->data = (void *) data;
 
 	return 0;
-
-error:
-	if (data != NULL)
-		free(data);
-
-	if (input_fd >= 0)
-		close(input_fd);
-
-	handlers->poll_fd = -1;
-	handlers->data = NULL;
-
-	return -1;
 }
 
 int lsm330dlc_gyroscope_deinit(struct noteII_sensors_handlers *handlers)
