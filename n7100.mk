@@ -40,8 +40,11 @@ PRODUCT_PACKAGES += \
 
 # Gps
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/gps.xml:system/vendor/etc/gps.xml \
-    $(LOCAL_PATH)/gps_daemon.sh:system/vendor/bin/gps_daemon.sh
+    $(LOCAL_PATH)/configs/gps.xml:system/vendor/etc/gps.xml
+
+PRODUCT_PACKAGES += \
+    libdmitry \
+    libshim_gpsd
 
 # idc 
 PRODUCT_COPY_FILES += \
@@ -63,6 +66,13 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libsecril-shim
 
+# Telephony
+PRODUCT_PACKAGES += \
+    telephony-ext
+
+PRODUCT_BOOT_JARS += \
+    telephony-ext
+
 # NFC
 PRODUCT_PACKAGES += \
     nfc.exynos4 \
@@ -83,7 +93,6 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_COPY_FILES += \
     frameworks/base/nfc-extras/com.android.nfc_extras.xml:system/etc/permissions/com.android.nfc_extras.xml \
-    frameworks/native/data/etc/android.hardware.bluetooth_le.xml:system/etc/permissions/android.hardware.bluetooth_le.xml \
     frameworks/native/data/etc/android.hardware.nfc.xml:system/etc/permissions/android.hardware.nfc.xml
 
 # NFCEE access control
@@ -109,6 +118,14 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml \
     frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml
+
+# Barometer
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/android.hardware.sensor.barometer.xml:system/etc/permissions/android.hardware.sensor.barometer.xml
+
+# Allow tethering without provisioning app
+PRODUCT_PROPERTY_OVERRIDES += \
+    net.tethering.noprovisioning=true
 
 # UMS
 PRODUCT_COPY_FILES += \

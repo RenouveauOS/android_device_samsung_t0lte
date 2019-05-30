@@ -1,4 +1,6 @@
-# Copyright (C) 2016 The CyanogenMod Project
+/*
+#
+# Copyright (C) 2016 The LineageOS Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+*/
 
-LOCAL_PATH := $(call my-dir)
+#include <sys/types.h>
 
-include $(call all-makefiles-under, $(LOCAL_PATH))
+extern "C" {
+  ssize_t _ZN7android13SensorManager13getSensorListEPPKPKNS_6SensorE(void* thiz, void* list);
+
+  ssize_t _ZNK7android13SensorManager13getSensorListEPPKPKNS_6SensorE(void* thiz, void* list) {
+    return _ZN7android13SensorManager13getSensorListEPPKPKNS_6SensorE(thiz, list);
+  }
+}
