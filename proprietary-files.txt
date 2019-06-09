@@ -1,5 +1,7 @@
-bin/glgps
-lib/hw/gps.exynos4.vendor.so
-lib/libakm.so
-lib/libsec-ril.so
-lib/libstlport.so
+system/bin/gpsd
+system/lib/hw/gps.default.so
+system/lib/libakm.so
+system/lib/libsec-ril.so
+system/usr/idc/sec_e-pen.idc
+system/usr/keylayout/sec_e-pen.kl
+system/usr/keylayout/sec_touchkey.kl

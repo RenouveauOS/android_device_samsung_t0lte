@@ -137,13 +137,13 @@
  *           in a package name as a "string16" to the consrtuctor. Since this
  *           lib only services GPS library, it is easy for us to just do that
  *           and this provide the constructor that the GPS library wants.
- *           The package name we use if "gps.manta". Why not?
+ *           The package name we use if "gps.default". Why not?
  */
 void _ZN7android13SensorManagerC1Ev(void *sensorMgr)
 {
     void *string;
 
-    _ZN7android8String16C1EPKc(&string, "gps.manta");
+    _ZN7android8String16C1EPKc(&string, "gps.default");
     _ZN7android13SensorManagerC1ERKNS_8String16E(sensorMgr, &string);
     _ZN7android8String16D1Ev(&string);
 }
@@ -165,15 +165,14 @@ void _ZN7android13SensorManager16createEventQueueEv(void **retVal, void *sensorM
     _ZN7android7String8D1Ev(&string);
 }
 
-
-/*
- * FUNCTION: android::SensorManager::getSensorList(Sensor const* const** list)
- * USE:      Get a list of sensors?
- * NOTES:    It looks like this function was renamed in N. Stub out to the correct call.
- */
-ssize_t _ZNK7android13SensorManager13getSensorListEPPKPKNS_6SensorE(void* thiz, void* list)
-{
-    return _ZN7android13SensorManager13getSensorListEPPKPKNS_6SensorE(thiz, list);
+/*		
+ * FUNCTION: android::SensorManager::getSensorList(Sensor const* const** list)		
+ * USE:      Get a list of sensors?		
+ * NOTES:    It looks like this function was renamed in N. Stub out to the correct call.		
+ */		
+ssize_t _ZNK7android13SensorManager13getSensorListEPPKPKNS_6SensorE(void* thiz, void* list)		
+{		
+    return _ZN7android13SensorManager13getSensorListEPPKPKNS_6SensorE(thiz, list);		
 }
 
 /*

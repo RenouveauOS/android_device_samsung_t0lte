@@ -28,18 +28,21 @@ TARGET_NEEDS_PLATFORM_TEXT_RELOCATIONS := true
 LINKER_NON_PIE_EXECUTABLES_HEADER_DIR := device/samsung/n7100/include
 LIBART_IMG_BASE := 0x30000000
 
+# EGL blobs crash on screen off
+# TARGET_SKIP_EGL_CONTEXT_DETACH := true
+
+# GPS
+TARGET_PROCESS_SDK_VERSION_OVERRIDE += \
+    /system/bin/gpsd=19
+
+# SHIM
+TARGET_LD_SHIM_LIBS += \
+    /system/bin/gpsd|libdmitry.so \
+    /system/bin/gpsd|libshim_gpsd.so \
+    /system/lib/libgui.so|libshim_gpsd.so
+
 # Graphics
 TARGET_REQUIRES_SYNCHRONOUS_SETSURFACE := true
-
-# EGL blobs crash on screen off
-TARGET_SKIP_EGL_CONTEXT_DETACH := true
-
-TARGET_PROCESS_SDK_VERSION_OVERRIDE += \
-    /system/vendor/bin/gpsd=22
-
-TARGET_LD_SHIM_LIBS := \
-    /system/vendor/bin/gpsd|libdmitry.so \
-    /system/lib/libgui.so|libshim_gpsd.so
 
 # Bluetooth
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/samsung/n7100/bluetooth
@@ -47,8 +50,6 @@ BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/samsung/n7100/bluetooth
 # Kernel
 TARGET_KERNEL_SOURCE := kernel/samsung/smdk4412
 TARGET_KERNEL_CONFIG := lineageos_n7100_defconfig
-
-TARGET_SPECIFIC_HEADER_PATH += device/samsung/n7100/include
 
 # Cache
 BOARD_CACHEIMAGE_PARTITION_SIZE := 104857600

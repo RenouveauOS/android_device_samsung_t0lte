@@ -18,6 +18,7 @@ persist.camera.HAL3.enabled=1
 
 # EGL blobs crash on screen off
 # ro.egl.destroy_after_detach=true
+ro.config.low_ram=true
 
 # Google Assistant
 ro.opa.eligible_device=true

@@ -20,95 +20,80 @@
 #include <stdint.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <math.h>
 #include <string.h>
+#include <sys/types.h>
+#include <linux/ioctl.h>
+#include <linux/input.h>
 
 #include <hardware/sensors.h>
 #include <hardware/hardware.h>
 
-#define LOG_TAG "Acc_NoteII"
+#define LOG_TAG "Pressure_NoteII"
 #include <utils/Log.h>
 
-#include "input.h"
 #include "noteII_sensors.h"
 #include "ssp.h"
 
 extern int mFlushed;
 
-struct lsm330dlc_acceleration_data {
+struct bmp180_data {
 	char path_delay[PATH_MAX];
-
-	sensors_vec_t acceleration;
 };
 
-int lsm330dlc_acceleration_init(struct noteII_sensors_handlers *handlers,
+int bmp180_init(struct noteII_sensors_handlers *handlers,
 	struct smdk4x12_sensors_device *device)
 {
-	struct lsm330dlc_acceleration_data *data = NULL;
+	struct bmp180_data *data = NULL;
 	char path[PATH_MAX] = { 0 };
 	int input_fd = -1;
 	int rc;
-	int i;
 
 	//ALOGD("%s(%p, %p)", __func__, handlers, device);
 
 	if (handlers == NULL)
 		return -EINVAL;
 
-	data = (struct lsm330dlc_acceleration_data *) calloc(1, sizeof(struct lsm330dlc_acceleration_data));
+	data = (struct bmp180_data *) calloc(1, sizeof(struct bmp180_data));
 
-	input_fd = input_open("accelerometer_sensor");
+	input_fd = input_open("pressure_sensor");
 	if (input_fd < 0) {
 		//ALOGD("%s: Unable to open input", __func__);
-		if (data != NULL)
-			free(data);
-
-		if (input_fd >= 0)
-			close(input_fd);
-
-		handlers->poll_fd = -1;
-		handlers->data = NULL;
-
-		return -1;
+		goto error;
 	}
 
-	rc = sysfs_path_prefix("accelerometer_sensor", (char *) &path);
+	rc = sysfs_path_prefix("pressure_sensor", (char *) &path);
 	if (rc < 0 || path[0] == '\0') {
 		//ALOGD("%s: Unable to open sysfs", __func__);
-		if (data != NULL)
-			free(data);
-
-		if (input_fd >= 0)
-			close(input_fd);
-
-		handlers->poll_fd = -1;
-		handlers->data = NULL;
-
-		return -1;
+		goto error;
 	}
 
 	int sf = snprintf(data->path_delay, PATH_MAX, "%s/poll_delay", path);
 	if(sf <= 0)
 	{
-		//ALOGD("ACC HAS FAILED !POLL_DELAY!");
-		if (data != NULL)
-			free(data);
-
-		if (input_fd >= 0)
-			close(input_fd);
-
-		handlers->poll_fd = -1;
-		handlers->data = NULL;
-
-		return -1;
+		//ALOGD("Pressure HAS FAILED !POLL_DELAY!");
+		goto error;
 	}
 
 	handlers->poll_fd = input_fd;
 	handlers->data = (void *) data;
 
 	return 0;
+
+error:
+	if (data != NULL)
+		free(data);
+
+	if (input_fd >= 0)
+		close(input_fd);
+
+	handlers->poll_fd = -1;
+	handlers->data = NULL;
+
+	return -1;
 }
 
-int lsm330dlc_acceleration_deinit(struct noteII_sensors_handlers *handlers)
+int bmp180_deinit(struct noteII_sensors_handlers *handlers)
 {
 	//ALOGD("%s(%p)", __func__, handlers);
 
@@ -126,9 +111,9 @@ int lsm330dlc_acceleration_deinit(struct noteII_sensors_handlers *handlers)
 	return 0;
 }
 
-int lsm330dlc_acceleration_activate(struct noteII_sensors_handlers *handlers)
+int bmp180_activate(struct noteII_sensors_handlers *handlers)
 {
-	struct lsm330dlc_acceleration_data *data;
+	struct bmp180_data *data;
 	int rc;
 
 	//ALOGD("%s(%p)", __func__, handlers);
@@ -136,9 +121,9 @@ int lsm330dlc_acceleration_activate(struct noteII_sensors_handlers *handlers)
 	if (handlers == NULL || handlers->data == NULL)
 		return -EINVAL;
 
-	data = (struct lsm330dlc_acceleration_data *) handlers->data;
+	data = (struct bmp180_data *) handlers->data;
 
-	rc = ssp_sensor_enable(ACCELEROMETER_SENSOR);
+	rc = ssp_sensor_enable(PRESSURE_SENSOR);
 	if (rc < 0) {
 		//ALOGD("%s: Unable to enable ssp sensor", __func__);
 		return -1;
@@ -149,9 +134,9 @@ int lsm330dlc_acceleration_activate(struct noteII_sensors_handlers *handlers)
 	return 0;
 }
 
-int lsm330dlc_acceleration_deactivate(struct noteII_sensors_handlers *handlers)
+int bmp180_deactivate(struct noteII_sensors_handlers *handlers)
 {
-	struct lsm330dlc_acceleration_data *data;
+	struct bmp180_data *data;
 	int rc;
 
 	//ALOGD("%s(%p)", __func__, handlers);
@@ -159,22 +144,22 @@ int lsm330dlc_acceleration_deactivate(struct noteII_sensors_handlers *handlers)
 	if (handlers == NULL || handlers->data == NULL)
 		return -EINVAL;
 
-	data = (struct lsm330dlc_acceleration_data *) handlers->data;
+	data = (struct bmp180_data *) handlers->data;
 
-	rc = ssp_sensor_disable(ACCELEROMETER_SENSOR);
+	rc = ssp_sensor_disable(PRESSURE_SENSOR);
 	if (rc < 0) {
 		//ALOGD("%s: Unable to disable ssp sensor", __func__);
 		return -1;
 	}
 
 	handlers->activated = 0;
-
+	
 	return 0;
 }
 
-int lsm330dlc_acceleration_set_delay(struct noteII_sensors_handlers *handlers, int64_t delay)
+int bmp180_set_delay(struct noteII_sensors_handlers *handlers, int64_t delay)
 {
-	struct lsm330dlc_acceleration_data *data;
+	struct bmp180_data *data;
 	int rc;
 
 	//ALOGD("%s(%p, %" PRId64 ")", __func__, handlers, delay);
@@ -182,7 +167,7 @@ int lsm330dlc_acceleration_set_delay(struct noteII_sensors_handlers *handlers, i
 	if (handlers == NULL || handlers->data == NULL)
 		return -EINVAL;
 
-	data = (struct lsm330dlc_acceleration_data *) handlers->data;
+	data = (struct bmp180_data *) handlers->data;
 
 	rc = sysfs_value_write(data->path_delay, (int) delay);
 	if (rc < 0) {
@@ -193,23 +178,22 @@ int lsm330dlc_acceleration_set_delay(struct noteII_sensors_handlers *handlers, i
 	return 0;
 }
 
-float lsm330dlc_acceleration_convert(int value)
+float bmp180_convert(int value)
 {
-	return (float) value * (GRAVITY_EARTH / 1024.0f);
+	return value / 100.0f;
 }
 
-int lsm330dlc_acceleration_get_data(struct noteII_sensors_handlers *handlers,
+int bmp180_get_data(struct noteII_sensors_handlers *handlers,
 	struct sensors_event_t *event)
 {
-	struct lsm330dlc_acceleration_data *data;
 	struct input_event input_event;
 	int input_fd;
 	int rc;
-	int sensorId = SENSOR_TYPE_ACCELEROMETER;
+	int sensorId = SENSOR_TYPE_PRESSURE;
 
-	if (handlers == NULL || handlers->data == NULL || event == NULL)
+	if (handlers == NULL || event == NULL)
 		return -EINVAL;
-	
+
 	if (mFlushed & (1 << sensorId)) { /* Send flush META_DATA_FLUSH_COMPLETE immediately */
 		sensors_event_t sensor_event;
 		memset(&sensor_event, 0, sizeof(sensor_event));
@@ -222,22 +206,14 @@ int lsm330dlc_acceleration_get_data(struct noteII_sensors_handlers *handlers,
 		//ALOGD("AkmSensor: %s Flushed sensorId: %d", __func__, sensorId);
 	}
 
-	data = (struct lsm330dlc_acceleration_data *) handlers->data;
-
 	input_fd = handlers->poll_fd;
 	if (input_fd < 0)
-		return -1;
+		return -EINVAL;
 
 	memset(event, 0, sizeof(struct sensors_event_t));
 	event->version = sizeof(struct sensors_event_t);
 	event->sensor = handlers->handle;
 	event->type = handlers->handle;
-
-	event->acceleration.x = data->acceleration.x;
-	event->acceleration.y = data->acceleration.y;
-	event->acceleration.z = data->acceleration.z;
-
-	event->magnetic.status = SENSOR_STATUS_ACCURACY_MEDIUM;
 
 	do {
 		rc = read(input_fd, &input_event, sizeof(input_event));
@@ -246,40 +222,34 @@ int lsm330dlc_acceleration_get_data(struct noteII_sensors_handlers *handlers,
 
 		if (input_event.type == EV_REL) {
 			switch (input_event.code) {
-				case REL_X:
-					event->acceleration.x = lsm330dlc_acceleration_convert(input_event.value);
-					break;
-				case REL_Y:
-					event->acceleration.y = lsm330dlc_acceleration_convert(input_event.value);
-					break;
-				case REL_Z:
-					event->acceleration.z = lsm330dlc_acceleration_convert(input_event.value);
+				case REL_HWHEEL:
+					event->pressure = bmp180_convert(input_event.value);
 					break;
 				default:
 					continue;
 			}
 		} else if (input_event.type == EV_SYN) {
-			if (input_event.code == SYN_REPORT)
+			if (input_event.code == SYN_REPORT && event->pressure != 0) {
 				event->timestamp = getTimestamp();
+				break;
+			} else {
+				return -1;
+			}
 		}
-	} while (input_event.type != EV_SYN);
-
-	data->acceleration.x = event->acceleration.x;
-	data->acceleration.y = event->acceleration.y;
-	data->acceleration.z = event->acceleration.z;
+	} while (1);
 
 	return 0;
 }
 
-struct noteII_sensors_handlers lsm330dlc_acceleration = {
-	.name = "LSM330DLC Acceleration",
-	.handle = SENSOR_TYPE_ACCELEROMETER,
-	.init = lsm330dlc_acceleration_init,
-	.deinit = lsm330dlc_acceleration_deinit,
-	.activate = lsm330dlc_acceleration_activate,
-	.deactivate = lsm330dlc_acceleration_deactivate,
-	.set_delay = lsm330dlc_acceleration_set_delay,
-	.get_data = lsm330dlc_acceleration_get_data,
+struct noteII_sensors_handlers bmp180 = {
+	.name = "BMP180",
+	.handle = SENSOR_TYPE_PRESSURE,
+	.init = bmp180_init,
+	.deinit = bmp180_deinit,
+	.activate = bmp180_activate,
+	.deactivate = bmp180_deactivate,
+	.set_delay = bmp180_set_delay,
+	.get_data = bmp180_get_data,
 	.activated = 0,
 	.needed = 0,
 	.poll_fd = -1,

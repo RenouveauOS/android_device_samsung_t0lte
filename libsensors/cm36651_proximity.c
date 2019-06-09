@@ -25,15 +25,12 @@
 #include <linux/ioctl.h>
 #include <linux/input.h>
 
-#include <cutils/properties.h>
-
 #include <hardware/sensors.h>
 #include <hardware/hardware.h>
 
 #define LOG_TAG "Proxy_NoteII"
 #include <utils/Log.h>
 
-#include "input.h"
 #include "noteII_sensors.h"
 #include "ssp.h"
 
@@ -61,39 +58,38 @@ int cm36651_proximity_init(struct noteII_sensors_handlers *handlers,
 	input_fd = input_open("proximity_sensor");
 	if (input_fd < 0) {
 		//ALOGD("%s: Unable to open input", __func__);
-		if (data != NULL)
-			free(data);
-
-		if (input_fd >= 0)
-			close(input_fd);
-
-		handlers->poll_fd = -1;
-		handlers->data = NULL;
-
-		return -1;
+		goto error;
 	}
 
 	rc = sysfs_path_prefix("proximity_sensor", (char *) &path);
 	if (rc < 0 || path[0] == '\0') {
 		//ALOGD("%s: Unable to open sysfs", __func__);
-		if (data != NULL)
-			free(data);
-
-		if (input_fd >= 0)
-			close(input_fd);
-
-		handlers->poll_fd = -1;
-		handlers->data = NULL;
-
-		return -1;
+		goto error;
 	}
 
-	snprintf(data->path_delay, PATH_MAX, "%s/poll_delay", path);
+	int sf = snprintf(data->path_delay, PATH_MAX, "%s/poll_delay", path);
+	if(sf <= 0)
+	{
+		ALOGD("PROX HAS FAILED !POLL_DELAY!");
+		goto error;
+	}
 
 	handlers->poll_fd = input_fd;
 	handlers->data = (void *) data;
 
 	return 0;
+
+error:
+	if (data != NULL)
+		free(data);
+
+	if (input_fd >= 0)
+		close(input_fd);
+
+	handlers->poll_fd = -1;
+	handlers->data = NULL;
+
+	return -1;
 }
 
 int cm36651_proximity_deinit(struct noteII_sensors_handlers *handlers)
@@ -114,10 +110,33 @@ int cm36651_proximity_deinit(struct noteII_sensors_handlers *handlers)
 	return 0;
 }
 
-bool hack = false;
-
 int cm36651_proximity_activate(struct noteII_sensors_handlers *handlers)
 {
+	usleep(100);
+	struct cm36651_proximity_data *data;
+	int rc;
+
+	//ALOGD("%s(%p)", __func__, handlers);
+
+	if (handlers == NULL || handlers->data == NULL)
+		return -EINVAL;
+
+	data = (struct cm36651_proximity_data *) handlers->data;
+
+	rc = ssp_sensor_enable(PROXIMITY_SENSOR);
+	if (rc < 0) {
+		//ALOGD("%s: Unable to enable ssp sensor", __func__);
+		return -1;
+	}
+
+	handlers->activated = 1;
+
+	return 0;
+}
+
+int cm36651_proximity_deactivate(struct noteII_sensors_handlers *handlers)
+{	
+	usleep(100);
 	struct cm36651_proximity_data *data;
 	int rc;
 
@@ -128,42 +147,14 @@ int cm36651_proximity_activate(struct noteII_sensors_handlers *handlers)
 
 	data = (struct cm36651_proximity_data *) handlers->data;
 
-	rc = ssp_sensor_enable(PROXIMITY_SENSOR);
+	rc = ssp_sensor_disable(PROXIMITY_SENSOR);
 	if (rc < 0) {
-		ALOGD("%s: Unable to enable ssp sensor", __func__);
-		cm36651_proximity_activate(handlers);
+		//ALOGD("%s: Unable to disable ssp sensor", __func__);
+		return -1;
 	}
 
-	handlers->activated = 1;
-	handlers->needed = 1;
-	if(property_get_bool("sensors.proxy.hack", false) == true)
-		hack = true;
-	return 0;
-}
+	handlers->activated = 0;
 
-int cm36651_proximity_deactivate(struct noteII_sensors_handlers *handlers)
-{	
-	if(hack == false)
-	{
-		struct cm36651_proximity_data *data;
-		int rc;
-
-		ALOGD("%s(%p)", __func__, handlers);
-
-		if (handlers == NULL || handlers->data == NULL)
-			return -EINVAL;
-
-		data = (struct cm36651_proximity_data *) handlers->data;
-
-		rc = ssp_sensor_disable(PROXIMITY_SENSOR);
-		if (rc < 0) {
-			ALOGD("%s: Unable to disable ssp sensor", __func__);
-			return -1;
-		}
-
-		handlers->activated = 0;
-	}
-	hack = false;
 	return 0;
 }
 

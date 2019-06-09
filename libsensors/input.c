@@ -29,7 +29,6 @@
 #define LOG_TAG "NoteII_Input"
 #include <utils/Log.h>
 
-#include "input.h"
 #include "noteII_sensors.h"
 
 void input_event_set(struct input_event *event, int type, int code, int value)

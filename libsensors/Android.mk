@@ -20,17 +20,17 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := \
-	noteII_sensors.cpp \
-	input.cpp \
-	ssp.cpp \
-	akm8963.cpp \
-	cm36651_proximity.cpp \
-	cm36651_light.cpp \
-	lsm330dlc_acceleration.cpp \
-	lsm330dlc_gyroscope.cpp \
-	bmp180.cpp
+	noteII_sensors.c \
+	input.c \
+	ssp.c \
+	akm8963.c \
+	cm36651_proximity.c \
+	cm36651_light.c \
+	lsm330dlc_acceleration.c \
+	lsm330dlc_gyroscope.c \
+	bmp180.c
 
-LOCAL_CPP_INCLUDES := \
+LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)
 
 LOCAL_SHARED_LIBRARIES := libutils libcutils liblog libhardware
