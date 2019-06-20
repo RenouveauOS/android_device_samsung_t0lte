@@ -28,18 +28,12 @@ TARGET_NEEDS_PLATFORM_TEXT_RELOCATIONS := true
 LINKER_NON_PIE_EXECUTABLES_HEADER_DIR := device/samsung/n7100/include
 LIBART_IMG_BASE := 0x30000000
 
-# EGL blobs crash on screen off
-# TARGET_SKIP_EGL_CONTEXT_DETACH := true
+# GPS TESTING
+#TARGET_PROCESS_SDK_VERSION_OVERRIDE += \
+#    /system/bin/gpsd=19
 
-# GPS
-TARGET_PROCESS_SDK_VERSION_OVERRIDE += \
-    /system/bin/gpsd=19
-
-# SHIM
-TARGET_LD_SHIM_LIBS += \
-    /system/bin/gpsd|libdmitry.so \
-    /system/bin/gpsd|libshim_gpsd.so \
-    /system/lib/libgui.so|libshim_gpsd.so
+# SHIM SAME
+TARGET_LD_SHIM_LIBS += /system/bin/gpsd|libdmitry.so
 
 # Graphics
 TARGET_REQUIRES_SYNCHRONOUS_SETSURFACE := true

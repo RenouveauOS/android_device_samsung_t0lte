@@ -46,9 +46,7 @@ PRODUCT_PACKAGES += \
 
 # Gps
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/gps.xml:system/etc/gps.xml \
-    $(LOCAL_PATH)/gps_daemon.sh:system/bin/gps_daemon.sh
-
+    $(LOCAL_PATH)/configs/gps.xml:system/etc/gps.xml
 	
 # idc 
 PRODUCT_COPY_FILES += \
@@ -65,6 +63,13 @@ PRODUCT_PACKAGES += \
     libsecril-client-sap \
     SamsungServiceMode \
     tinyplay
+
+# RIL
+PRODUCT_PACKAGES += \
+	libsecril-shim
+
+PRODUCT_PACKAGES += \
+    libxml2
 
 # GPS fix
 PRODUCT_PACKAGES += \
