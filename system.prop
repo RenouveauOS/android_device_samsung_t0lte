@@ -17,14 +17,19 @@ ro.ril.telephony.nstrings=4
 persist.camera.HAL3.enabled=1
 
 # EGL blobs crash on screen off
-# ro.egl.destroy_after_detach=true
-ro.config.low_ram=true
+ro.egl.destroy_after_detach=true
 
 # Google Assistant
 ro.opa.eligible_device=true
 
 # sdcardfs
 ro.sys.sdcardfs=true
+
+# GPS
+ro.ril.def.agps.mode=1
+
+# Wifi
+wifi.supplicant_scan_interval=240
 
 #
 # ~system.prop for n7100
