@@ -66,14 +66,16 @@ PRODUCT_PACKAGES += \
 
 # RIL
 PRODUCT_PACKAGES += \
-	libsecril-shim
+	libsecril-shim \
+    libsamsung_symbols
 
 PRODUCT_PACKAGES += \
     libxml2
 
 # GPS fix
 PRODUCT_PACKAGES += \
-    libdmitry
+    libdmitry \
+    libshim_gpsd
 
 # Telephony
 PRODUCT_PACKAGES += \
