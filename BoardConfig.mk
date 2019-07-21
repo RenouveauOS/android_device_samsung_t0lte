@@ -28,12 +28,23 @@ TARGET_NEEDS_PLATFORM_TEXT_RELOCATIONS := true
 LINKER_NON_PIE_EXECUTABLES_HEADER_DIR := device/samsung/n7100/include
 LIBART_IMG_BASE := 0x30000000
 
+# RIL
+BOARD_PROVIDES_LIBRIL := true
+BOARD_MODEM_TYPE := xmm6262
+BOARD_GLOBAL_CFLAGS += -DDISABLE_ASHMEM_TRACKING
+BOARD_RIL_CLASS := ../../../device/samsung/n7100/ril
+TARGET_SPECIFIC_HEADER_PATH += device/samsung/n7100/include
+
 # GPS TESTING
-#TARGET_PROCESS_SDK_VERSION_OVERRIDE += \
-#    /system/bin/gpsd=19
+TARGET_PROCESS_SDK_VERSION_OVERRIDE += \
+    /system/bin/gpsd=19
+BOARD_GPS_SET_PRIVACY := true
 
 # SHIM SAME
-TARGET_LD_SHIM_LIBS += /system/bin/gpsd|libdmitry.so
+TARGET_LD_SHIM_LIBS += \
+	/system/lib/libsec-ril.so|libsamsung_symbols.so \
+	/system/bin/gpsd|libdmitry.so \
+	/system/lib/libgui.so|libshim_gpsd.so
 
 # Graphics
 TARGET_REQUIRES_SYNCHRONOUS_SETSURFACE := true
