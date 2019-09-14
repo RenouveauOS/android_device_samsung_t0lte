@@ -112,14 +112,15 @@ int cm36651_proximity_deinit(struct noteII_sensors_handlers *handlers)
 
 int cm36651_proximity_activate(struct noteII_sensors_handlers *handlers)
 {
-	usleep(100);
 	struct cm36651_proximity_data *data;
 	int rc;
 
 	//ALOGD("%s(%p)", __func__, handlers);
 
-	if (handlers == NULL || handlers->data == NULL)
+	if (handlers->data == NULL){
+		ALOGD("%s: HANDLERS ARE NULL", __func__);
 		return -EINVAL;
+	}
 
 	data = (struct cm36651_proximity_data *) handlers->data;
 
@@ -136,7 +137,6 @@ int cm36651_proximity_activate(struct noteII_sensors_handlers *handlers)
 
 int cm36651_proximity_deactivate(struct noteII_sensors_handlers *handlers)
 {	
-	usleep(100);
 	struct cm36651_proximity_data *data;
 	int rc;
 
@@ -173,7 +173,7 @@ int cm36651_proximity_set_delay(struct noteII_sensors_handlers *handlers, int64_
 	rc = sysfs_value_write(data->path_delay, (int) delay);
 	if (rc < 0) {
 		//ALOGD("%s: Unable to write sysfs value", __func__);
-		return -1;
+		return 0;
 	}
 	
 	return 0;
@@ -243,7 +243,7 @@ struct noteII_sensors_handlers cm36651_proximity = {
 	.set_delay = cm36651_proximity_set_delay,
 	.get_data = cm36651_proximity_get_data,
 	.activated = 0,
-	.needed = 0,
+	.needed = 1,
 	.poll_fd = -1,
 	.data = NULL,
 };
