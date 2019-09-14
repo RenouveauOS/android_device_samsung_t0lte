@@ -238,6 +238,9 @@ int smdk4x12_sensors_close(hw_device_t *device)
 	return 0;
 }
 
+extern uint32_t android_get_application_target_sdk_version();
+extern void android_set_application_target_sdk_version(uint32_t target);
+
 int smdk4x12_sensors_open(const struct hw_module_t* module, const char *id,
 	struct hw_device_t** device)
 {

@@ -33,7 +33,7 @@ LOCAL_SRC_FILES := \
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)
 
-LOCAL_SHARED_LIBRARIES := libutils libcutils liblog libhardware
+LOCAL_SHARED_LIBRARIES := libutils libcutils liblog libhardware libc
 LOCAL_PRELINK_MODULE := false
 
 LOCAL_MODULE := sensors.$(TARGET_BOOTLOADER_BOARD_NAME)
