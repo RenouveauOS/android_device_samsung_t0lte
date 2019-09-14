@@ -22,9 +22,6 @@ ro.egl.destroy_after_detach=true
 # Google Assistant
 ro.opa.eligible_device=true
 
-# sdcardfs
-ro.sys.sdcardfs=true
-
 # GPS
 ro.ril.def.agps.mode=1
 
