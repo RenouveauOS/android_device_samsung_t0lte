@@ -167,16 +167,11 @@ struct route_setting
 };
 
 struct route_setting voicecall_default[] = {
-    { .ctl_name = "AIF2 Mode", .intval = 0, },
     { .ctl_name = "DAC1L Mixer AIF1.1 Switch", .intval = 1, },
     { .ctl_name = "DAC1R Mixer AIF1.1 Switch", .intval = 1, },
-    { .ctl_name = "DAC1L Mixer AIF2 Switch", .intval = 1, },
-    { .ctl_name = "DAC1R Mixer AIF2 Switch", .intval = 1, },
-    { .ctl_name = "AIF2DAC Mux", .strval = "AIF2DACDAT", },
-    { .ctl_name = NULL, },
-};
-
-struct route_setting voicecall_default_disable[] = {
+    { .ctl_name = "AIF2ADCL DRC Switch", .intval = 0, },
+    { .ctl_name = "AIF2DACL Source", .intval = 0, },
+    { .ctl_name = "AIF2DACR Source", .intval = 0, },
     { .ctl_name = "AIF2 Mode", .intval = 0, },
     { .ctl_name = "DAC1L Mixer AIF2 Switch", .intval = 0, },
     { .ctl_name = "DAC1R Mixer AIF2 Switch", .intval = 0, },

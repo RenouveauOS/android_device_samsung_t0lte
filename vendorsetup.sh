@@ -1,2 +1,4 @@
 add_lunch_combo havoc_t0lte-userdebug
 add_lunch_combo havoc_t0lte-eng
+add_lunch_combo renouveau_t0lte-userdebug
+add_lunch_combo renouveau_t0lte-eng
