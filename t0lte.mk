@@ -45,8 +45,8 @@ PRODUCT_PACKAGES += \
     fibmap.f2fs \
     fsck.f2fs \
     mkfs.f2fs
-	
-# idc 
+
+# idc
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/idc/sec_e-pen.idc:system/usr/idc/sec_e-pen.idc
 
